@@ -1,5 +1,6 @@
-import PropTypes from 'prop-types';
-import { Form, FormikProvider, useFormik } from 'formik';
+import PropTypes from "prop-types";
+import { Form, FormikProvider, useFormik } from "formik";
+import { useState, useRef } from "react";
 // material
 import {
   Box,
@@ -8,17 +9,17 @@ import {
   CardHeader,
   Typography,
   FormControlLabel,
-  Stack
-} from '@mui/material';
+  Stack,
+} from "@mui/material";
 
 // ----------------------------------------------------------------------
 
 const TASKS = [
-  'Create FireStone Logo',
-  'Add SCSS and JS files if required',
-  'Stakeholder Meeting',
-  'Scoping & Estimations',
-  'Sprint Showcase'
+  "Create FireStone Logo",
+  "Add SCSS and JS files if required",
+  "Stakeholder Meeting",
+  "Scoping & Estimations",
+  "Sprint Showcase",
 ];
 
 // ----------------------------------------------------------------------
@@ -26,7 +27,7 @@ const TASKS = [
 TaskItem.propTypes = {
   task: PropTypes.string,
   checked: PropTypes.bool,
-  formik: PropTypes.object
+  formik: PropTypes.object,
 };
 
 function TaskItem({ task, checked, formik, ...other }) {
@@ -36,16 +37,21 @@ function TaskItem({ task, checked, formik, ...other }) {
     <Stack direction="row" justifyContent="space-between" sx={{ py: 0.75 }}>
       <FormControlLabel
         control={
-          <Checkbox {...getFieldProps('checked')} value={task} checked={checked} {...other} />
+          <Checkbox
+            {...getFieldProps("checked")}
+            value={task}
+            checked={checked}
+            {...other}
+          />
         }
         label={
           <Typography
             variant="body2"
             sx={{
               ...(checked && {
-                color: 'text.disabled',
-                textDecoration: 'line-through'
-              })
+                color: "text.disabled",
+                textDecoration: "line-through",
+              }),
             }}
           >
             {task}
@@ -57,13 +63,22 @@ function TaskItem({ task, checked, formik, ...other }) {
 }
 
 export default function AppTasks() {
+  const [newtask, setNewTask] = useState([...TASKS]);
+  const taskInput = useRef();
   const formik = useFormik({
     initialValues: {
-      checked: [TASKS[2]]
+      checked: [TASKS[2]],
     },
     onSubmit: (values) => {
-      console.log(values);
-    }
+      if (!taskInput.current.value) {
+        alert("Enter something!");
+        return;
+      }
+      setNewTask([...newtask, taskInput.current.value]);
+      const taskInputField = document.getElementById("taskInbox");
+      taskInputField.value = "";
+      taskInputField.focus();
+    },
   });
 
   const { values, handleSubmit } = formik;
@@ -74,8 +89,16 @@ export default function AppTasks() {
       <Box sx={{ px: 3, py: 1 }}>
         <FormikProvider value={formik}>
           <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-            {TASKS.map((task) => (
+            <input type="text" id="taskInbox" ref={taskInput} />
+            <button
+              style={{ color: "white", background: "green" }}
+              type="submit"
+            >
+              Submit
+            </button>
+            {newtask.map((task, index) => (
               <TaskItem
+                key={index}
                 task={task}
                 formik={formik}
                 checked={values.checked.includes(task)}
